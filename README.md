@@ -70,24 +70,31 @@ npm install   # or pnpm install
 npm run dev
 ```
 
-### Sniffer (optional)
+### Sniffer — realtime Chrome (run on host)
 
-```bash
+PowerShell:
+
+```powershell
 cd services/sniffer
 python -m venv .venv
-.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env
-python main.py          # MODE=dry-run by default
+copy .env.example .env
+python main.py
 ```
 
-Live capture: set `MODE=live` (Windows needs Npcap). See [`services/sniffer/README.md`](services/sniffer/README.md).
+Default `MODE=connections` = real OS sockets (your Chrome traffic). Do not use Docker sniffer for this. Skip Replay sample if you want only live data.
+
+**Windows gotcha:** do not run `npm run dev` for the API and `docker compose` API at the same time on `:4000`. Two listeners split traffic — UI shows Offline / 0 events while the sniffer still looks healthy. Prefer Docker API + host sniffer, and use `http://127.0.0.1:4000` (not `localhost`) in sniffer/web env.
+
+See [`services/sniffer/README.md`](services/sniffer/README.md).
 
 ### Docker Compose
 
 ```bash
+# web + api only — then run host sniffer in another terminal
 docker compose up --build
-docker compose --profile sniffer up --build   # optional dry-run sniffer
+docker compose --profile sniffer up --build   # optional; cannot see host Chrome
 ```
 
 ### Smoke check (API must be running)

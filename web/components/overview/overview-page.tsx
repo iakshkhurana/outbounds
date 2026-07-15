@@ -35,8 +35,10 @@ export function OverviewPage() {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    ;(async () => {
+    let initial = true
+
+    const load = async () => {
+      if (initial) setLoading(true)
       await probeApi()
       const [eventsData, hostsData] = await Promise.all([
         fetchEvents(filters),
@@ -47,9 +49,17 @@ export function OverviewPage() {
       setHosts(hostsData)
       setSource(getLastDataSource())
       setLoading(false)
-    })()
+      initial = false
+    }
+
+    void load()
+    const poll = setInterval(() => {
+      void load()
+    }, 3000)
+
     return () => {
       cancelled = true
+      clearInterval(poll)
     }
   }, [filters, refreshKey])
 
@@ -136,16 +146,24 @@ export function OverviewPage() {
 
           {!loading && filteredEvents.length === 0 && isApiConfigured() ? (
             <div className="rounded-lg border border-border/30 bg-card/30 p-8 text-center">
-              <p className="text-muted-foreground">No events in the API yet.</p>
+              <p className="text-muted-foreground">
+                No live events yet. Run the sniffer on your PC (
+                <span className="font-mono text-xs">MODE=connections</span>
+                ), then browse in Chrome.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground/80">
+                Docker sniffer cannot see your host Chrome. Sample replay is optional for demos only.
+              </p>
               <button
                 type="button"
-                className="mt-4 rounded border border-primary/40 px-4 py-2 text-sm text-primary hover:bg-primary/10"
+                className="mt-4 rounded border border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
                 onClick={async () => {
-                  const ok = await triggerReplay()
-                  if (ok) reload()
+                  const result = await triggerReplay()
+                  if (result.ok) reload()
+                  else window.alert(result.message ?? 'Replay failed')
                 }}
               >
-                Load sample replay
+                Optional: load sample replay
               </button>
             </div>
           ) : (

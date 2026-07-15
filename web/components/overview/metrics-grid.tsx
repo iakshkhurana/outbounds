@@ -10,14 +10,18 @@ export function MetricsGrid({ refreshKey = 0 }: { refreshKey?: number }) {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    fetchNetworkStats().then((data) => {
-      if (cancelled) return
-      setStats(data)
-      setLoading(false)
-    })
+    const load = () => {
+      fetchNetworkStats().then((data) => {
+        if (cancelled) return
+        setStats(data)
+        setLoading(false)
+      })
+    }
+    load()
+    const poll = setInterval(load, 3000)
     return () => {
       cancelled = true
+      clearInterval(poll)
     }
   }, [refreshKey])
 

@@ -10,6 +10,7 @@ from typing import Any
 
 from client import ApiClient
 from config import BATCH_MS, CAPTURE_IFACE, MODE
+from connections import poll_connection_events, snapshot_outbound_events
 from dry_run import generate_dry_run_events
 
 
@@ -39,7 +40,7 @@ def run_dry_run(client: ApiClient, stop_flag: dict[str, bool]) -> None:
 
         if now - last_heartbeat >= 5:
             try:
-                client.heartbeat(mode="live", source="dry-run")
+                client.heartbeat(mode="replay", source="dry-run")
                 last_heartbeat = now
             except Exception as exc:  # noqa: BLE001
                 print(f"heartbeat failed: {exc}")
@@ -49,6 +50,40 @@ def run_dry_run(client: ApiClient, stop_flag: dict[str, bool]) -> None:
             last_flush = now
 
         time.sleep(0.35)
+
+    _flush(client, batch)
+
+
+def run_connections(client: ApiClient, stop_flag: dict[str, bool]) -> None:
+    """Realtime-ish outbound peers via OS connection table (Chrome-visible on host)."""
+    print("connections mode: watching OS sockets (no Npcap). Browse in Chrome to generate traffic.")
+    batch: list[dict[str, Any]] = []
+    last_flush = time.time()
+    last_heartbeat = 0.0
+    poller = poll_connection_events(interval_sec=1.0)
+
+    while not stop_flag["stop"]:
+        try:
+            chunk = next(poller)
+            batch.extend(chunk)
+        except Exception as exc:  # noqa: BLE001
+            print(f"connection poll failed: {exc}")
+            time.sleep(1)
+            continue
+
+        now = time.time()
+        if now - last_heartbeat >= 5:
+            try:
+                n = len(snapshot_outbound_events())
+                client.heartbeat(mode="live", source=f"connections:{n}-peers")
+                last_heartbeat = now
+                print(f"watching ~{n} remote peers")
+            except Exception as exc:  # noqa: BLE001
+                print(f"heartbeat failed: {exc}")
+
+        if (now - last_flush) * 1000 >= BATCH_MS and batch:
+            batch = _flush(client, batch)
+            last_flush = now
 
     _flush(client, batch)
 
@@ -69,7 +104,7 @@ def run_live(client: ApiClient, stop_flag: dict[str, bool]) -> None:
         name="scapy-sniff",
     )
     worker.start()
-    print(f"live capture thread started (iface={source})")
+    print(f"pcap live capture started (iface={source})")
 
     batch: list[dict[str, Any]] = []
     last_flush = time.time()
@@ -85,7 +120,7 @@ def run_live(client: ApiClient, stop_flag: dict[str, bool]) -> None:
         now = time.time()
         if now - last_heartbeat >= 5:
             try:
-                client.heartbeat(mode="live", source=f"live:{source}")
+                client.heartbeat(mode="live", source=f"pcap:{source}")
                 last_heartbeat = now
             except Exception as exc:  # noqa: BLE001
                 print(f"heartbeat failed: {exc}")
@@ -110,8 +145,8 @@ def main() -> int:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    if MODE not in {"dry-run", "live"}:
-        print(f"Unknown MODE={MODE!r}. Use dry-run or live.")
+    if MODE not in {"dry-run", "live", "connections"}:
+        print(f"Unknown MODE={MODE!r}. Use connections | live | dry-run.")
         return 1
 
     print(f"Outbounds sniffer starting in {MODE} mode (session={session_id})")
@@ -119,11 +154,13 @@ def main() -> int:
     try:
         if MODE == "live":
             run_live(client, stop_flag)
+        elif MODE == "connections":
+            run_connections(client, stop_flag)
         else:
             run_dry_run(client, stop_flag)
     except RuntimeError as exc:
         print(str(exc))
-        print("Tip: set MODE=dry-run for permission-free demos.")
+        print("Tip: MODE=connections works without Npcap for Chrome/OS traffic.")
         return 1
 
     print("sniffer stopped")

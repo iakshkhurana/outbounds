@@ -18,5 +18,5 @@ API_HEARTBEAT_URL = env(
 )
 TOKEN = env("OUTBOUNDS_TOKEN", "dev-local-token")
 BATCH_MS = int(env("BATCH_MS", "1000"))
-MODE = env("MODE", "dry-run").lower()
+MODE = env("MODE", "connections").lower()
 CAPTURE_IFACE = os.getenv("CAPTURE_IFACE", "").strip() or None

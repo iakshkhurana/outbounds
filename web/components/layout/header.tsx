@@ -16,6 +16,8 @@ export function Header({ onDataMutated }: { onDataMutated?: () => void }) {
   const [status, setStatus] = useState<CaptureStatus | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const [actionError, setActionError] = useState<string | null>(null)
+
   const refreshStatus = useCallback(() => {
     fetchCaptureStatus().then(setStatus)
   }, [])
@@ -30,9 +32,15 @@ export function Header({ onDataMutated }: { onDataMutated?: () => void }) {
     !isApiConfigured()
       ? 'Mock'
       : status?.online
-        ? status.mode === 'replay'
-          ? 'Replay'
-          : 'Live'
+        ? status.source?.includes('connections')
+          ? 'Live'
+          : status.source?.includes('pcap')
+            ? 'Live'
+            : status.mode === 'replay'
+              ? status.source?.includes('dry-run')
+                ? 'Dry-run'
+                : 'Replay'
+              : 'Live'
         : status?.mode === 'replay'
           ? 'Replay'
           : 'Offline'
@@ -46,21 +54,27 @@ export function Header({ onDataMutated }: { onDataMutated?: () => void }) {
 
   const handleReplay = async () => {
     setBusy(true)
-    const ok = await triggerReplay()
+    setActionError(null)
+    const result = await triggerReplay()
     setBusy(false)
-    if (ok) {
+    if (result.ok) {
       refreshStatus()
       onDataMutated?.()
+    } else {
+      setActionError(result.message ?? 'Replay failed')
     }
   }
 
   const handleReset = async () => {
     setBusy(true)
-    const ok = await triggerReset()
+    setActionError(null)
+    const result = await triggerReset()
     setBusy(false)
-    if (ok) {
+    if (result.ok) {
       refreshStatus()
       onDataMutated?.()
+    } else {
+      setActionError(result.message ?? 'Reset failed')
     }
   }
 
@@ -136,6 +150,9 @@ export function Header({ onDataMutated }: { onDataMutated?: () => void }) {
             </div>
           </div>
         </div>
+        {actionError && (
+          <p className="mt-3 text-sm text-red-400">{actionError}</p>
+        )}
       </div>
     </header>
   )

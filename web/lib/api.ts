@@ -149,20 +149,49 @@ export async function fetchCaptureStatus(): Promise<CaptureStatus> {
   }
 }
 
-export async function triggerReplay(): Promise<boolean> {
-  const remote = await tryApi<{ accepted?: number }>('/api/demo/replay', {
-    method: 'POST',
-    body: '{}',
-  })
-  return Boolean(remote)
+export async function triggerReplay(): Promise<{ ok: boolean; message?: string }> {
+  if (!API_URL) {
+    return { ok: false, message: 'NEXT_PUBLIC_API_URL is not set' }
+  }
+  try {
+    const res = await fetch(`${API_URL}/api/demo/replay`, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      return { ok: false, message: text || `Replay failed (${res.status})` }
+    }
+    lastDataSource = 'api'
+    return { ok: true }
+  } catch {
+    lastDataSource = 'unreachable'
+    return { ok: false, message: 'API unreachable — is services/api running on :4000?' }
+  }
 }
 
-export async function triggerReset(): Promise<boolean> {
-  const remote = await tryApi<{ ok?: boolean }>('/api/demo/reset', {
-    method: 'POST',
-    body: '{}',
-  })
-  return Boolean(remote?.ok)
+export async function triggerReset(): Promise<{ ok: boolean; message?: string }> {
+  if (!API_URL) {
+    return { ok: false, message: 'NEXT_PUBLIC_API_URL is not set' }
+  }
+  try {
+    const res = await fetch(`${API_URL}/api/demo/reset`, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    })
+    if (!res.ok) {
+      return { ok: false, message: `Reset failed (${res.status})` }
+    }
+    lastDataSource = 'api'
+    return { ok: true }
+  } catch {
+    lastDataSource = 'unreachable'
+    return { ok: false, message: 'API unreachable' }
+  }
 }
 
 export async function fetchDebugReport(windowSec: number): Promise<{

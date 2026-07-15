@@ -1,65 +1,57 @@
 # Outbounds sniffer
 
-Python worker that posts outbound connection metadata to the API.
+Posts outbound connection metadata to the API.
 
 ## Modes
 
-| Mode | Status |
-|---|---|
-| `dry-run` (default) | Synthetic events — no admin/pcap needed |
-| `live` | Best-effort Scapy capture (Npcap on Windows) |
+| Mode | What you see | Needs |
+|---|---|---|
+| **`connections` (default)** | Real remote peers from OS (Chrome, apps) | `psutil` only |
+| `live` | Packet-level capture | Npcap + Scapy + often Admin |
+| `dry-run` | Fake demo events | nothing |
 
-## Setup
+**Important:** For real Chrome traffic, run the sniffer on your **Windows/macOS/Linux host**, not inside Docker. A container cannot see your desktop browser sockets.
+
+## Realtime Chrome demo (recommended)
+
+Terminal 1 — API (or Docker api only):
+
+```bash
+docker compose up --build api
+# or: cd services/api && npm run dev
+```
+
+Terminal 2 — sniffer on host:
 
 ```bash
 cd services/sniffer
 python -m venv .venv
-
-# Windows
 .venv\Scripts\activate
-
-# macOS/Linux
-# source .venv/bin/activate
-
 pip install -r requirements.txt
-cp .env.example .env
-```
-
-## Run (dry-run)
-
-API on `:4000`, then:
-
-```bash
+copy .env.example .env
 python main.py
 ```
 
-## Run (live)
-
-1. Windows: install [Npcap](https://npcap.com/) and open an elevated terminal when required  
-2. Set in `.env`:
+Terminal 3 — web:
 
 ```bash
+docker compose up --build web
+# or: cd web && npm run dev
+```
+
+Open http://localhost:3000, then open Chrome and visit sites. Dashboard should fill within a few seconds (UI polls every 3s). Do **not** click Replay sample if you want only real traffic.
+
+## Dry-run / sample
+
+Only if you need a demo without real traffic: UI **Replay sample**, or `MODE=dry-run`.
+
+## Live packet mode
+
+```bash
+# .env
 MODE=live
-# optional: CAPTURE_IFACE=eth0   (Linux) / adapter name (Windows)
-```
-
-3. Run:
-
-```bash
+# CAPTURE_IFACE=...
 python main.py
 ```
 
-If capture cannot start, the process exits with a clear error — use `MODE=dry-run` for demos.
-
-**Metadata only.** No TLS decryption / payload inspection.
-
-## Env
-
-| Var | Default | Notes |
-|---|---|---|
-| `OUTBOUNDS_API_URL` | `http://localhost:4000/api/events` | Ingest |
-| `OUTBOUNDS_HEARTBEAT_URL` | `http://localhost:4000/api/heartbeat` | Liveness |
-| `OUTBOUNDS_TOKEN` | `dev-local-token` | Must match API |
-| `BATCH_MS` | `1000` | Flush interval |
-| `MODE` | `dry-run` | `dry-run` \| `live` |
-| `CAPTURE_IFACE` | empty | Optional interface name |
+Windows: install [Npcap](https://npcap.com/), elevated shell if required.
