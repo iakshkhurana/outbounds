@@ -34,7 +34,7 @@ Order matters. UI polish without data flow comes later.
 
 - [x] Python project + requirements
 - [x] Dry-run emitter (no pcap)
-- [ ] Live capture path (Scapy/pyshark) best-effort
+- [x] Live capture path (Scapy/pyshark) best-effort
 - [x] Batch POST + heartbeat
 - [x] Windows Npcap notes in README
 

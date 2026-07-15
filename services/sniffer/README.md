@@ -6,8 +6,8 @@ Python worker that posts outbound connection metadata to the API.
 
 | Mode | Status |
 |---|---|
-| `dry-run` (default) | Emits synthetic events — no admin/pcap needed |
-| `live` | Reserved for packet capture (Npcap/Scapy) — not wired yet |
+| `dry-run` (default) | Synthetic events — no admin/pcap needed |
+| `live` | Best-effort Scapy capture (Npcap on Windows) |
 
 ## Setup
 
@@ -25,23 +25,41 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-## Run
+## Run (dry-run)
 
-Make sure the API is up on `:4000`, then:
+API on `:4000`, then:
 
 ```bash
 python main.py
 ```
 
-You should see flush logs. Check the web UI / `GET /api/overview` for new hosts.
+## Run (live)
 
-## Windows live capture notes (later)
+1. Windows: install [Npcap](https://npcap.com/) and open an elevated terminal when required  
+2. Set in `.env`:
 
-- Install [Npcap](https://npcap.com/)
-- Run the capture process elevated when required
-- Prefer a dedicated lab interface
-- Outbounds still observes **metadata only** — no TLS decryption
+```bash
+MODE=live
+# optional: CAPTURE_IFACE=eth0   (Linux) / adapter name (Windows)
+```
+
+3. Run:
+
+```bash
+python main.py
+```
+
+If capture cannot start, the process exits with a clear error — use `MODE=dry-run` for demos.
+
+**Metadata only.** No TLS decryption / payload inspection.
 
 ## Env
 
-See `.env.example` for `OUTBOUNDS_API_URL`, `OUTBOUNDS_TOKEN`, `BATCH_MS`, and `MODE`.
+| Var | Default | Notes |
+|---|---|---|
+| `OUTBOUNDS_API_URL` | `http://localhost:4000/api/events` | Ingest |
+| `OUTBOUNDS_HEARTBEAT_URL` | `http://localhost:4000/api/heartbeat` | Liveness |
+| `OUTBOUNDS_TOKEN` | `dev-local-token` | Must match API |
+| `BATCH_MS` | `1000` | Flush interval |
+| `MODE` | `dry-run` | `dry-run` \| `live` |
+| `CAPTURE_IFACE` | empty | Optional interface name |
