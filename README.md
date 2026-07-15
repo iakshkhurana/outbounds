@@ -86,6 +86,19 @@ Default mode is `dry-run` (synthetic events, no Npcap). See [`services/sniffer/R
 
 Replay mode works without live capture. See [`services/api/README.md`](services/api/README.md) for API details.
 
+### Docker Compose
+
+```bash
+# web + api
+docker compose up --build
+
+# optional sniffer dry-run profile
+docker compose --profile sniffer up --build
+```
+
+Then open http://localhost:3000 and click **Replay sample** (API on :4000).
+
+
 ## Limits
 
 - Not a firewall, IDS, or MITM proxy  

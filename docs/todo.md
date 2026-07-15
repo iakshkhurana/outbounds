@@ -41,7 +41,7 @@ Order matters. UI polish without data flow comes later.
 ## Phase 4 — Integration
 
 - [x] `GET /api/report` Markdown export
-- [ ] Optional Docker Compose (web + api + sniffer)
+- [x] Optional Docker Compose (web + api + sniffer)
 - [ ] README screenshots
 
 ## Later / out of scope
