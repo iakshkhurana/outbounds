@@ -5,8 +5,8 @@ Order matters. UI polish without data flow comes later.
 ## Phase 0 — Skeleton
 
 - [x] Service layout: `web/`, `services/api`, `services/sniffer`, `docs`
-- [ ] Sample JSONL fixtures in `sample-data/`
-- [ ] README run paths verified for three services
+- [x] Sample JSONL fixtures in `sample-data/`
+- [x] README run paths verified for three services
 
 ## Phase 1 — API (`services/api`)
 
@@ -32,11 +32,11 @@ Order matters. UI polish without data flow comes later.
 
 ## Phase 3 — Sniffer (`services/sniffer`)
 
-- [ ] Python project + requirements
-- [ ] Dry-run emitter (no pcap)
+- [x] Python project + requirements
+- [x] Dry-run emitter (no pcap)
 - [ ] Live capture path (Scapy/pyshark) best-effort
-- [ ] Batch POST + heartbeat
-- [ ] Windows Npcap notes in README
+- [x] Batch POST + heartbeat
+- [x] Windows Npcap notes in README
 
 ## Phase 4 — Integration
 

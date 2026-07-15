@@ -75,8 +75,14 @@ pnpm dev
 
 ```bash
 cd services/sniffer
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
 python main.py
 ```
+
+Default mode is `dry-run` (synthetic events, no Npcap). See [`services/sniffer/README.md`](services/sniffer/README.md).
 
 Replay mode works without live capture. See [`services/api/README.md`](services/api/README.md) for API details.
 
