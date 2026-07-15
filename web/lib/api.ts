@@ -165,83 +165,107 @@ export async function triggerReset(): Promise<boolean> {
   return Boolean(remote?.ok)
 }
 
-export async function generateReport(startTime: Date, endTime: Date): Promise<Report> {
-  const remoteMarkdown = await tryApi<string>(
-    `/api/report?windowSec=${Math.max(
-      30,
-      Math.round((endTime.getTime() - startTime.getTime()) / 1000),
-    )}&format=json`,
-  )
+export async function fetchDebugReport(windowSec: number): Promise<{
+  markdown: string
+  json: Report | null
+}> {
+  const clamped = Math.min(Math.max(windowSec, 30), 86400)
+  const markdown =
+    (await tryApi<string>(`/api/report?windowSec=${clamped}&format=markdown`)) ?? ''
 
-  if (remoteMarkdown && typeof remoteMarkdown === 'object') {
-    const remote = remoteMarkdown as {
-      generatedAt: string
-      since: string
-      until: string
-      summary: {
-        eventsInWindow: number
-        failedDns: number
-        highLatency: number
-        flaggedHostCount: number
-      }
-      flaggedHosts: Array<{
-        id: string
-        label: string
-        ip: string
-        riskLevel: Host['riskLevel']
-        riskReasons: string[]
-        eventCount: number
-      }>
+  const remote = await tryApi<{
+    generatedAt: string
+    since: string
+    until: string
+    summary: {
+      eventsInWindow: number
+      failedDns: number
+      highLatency: number
+      flaggedHostCount: number
     }
+    flaggedHosts: Array<{
+      id: string
+      label: string
+      ip: string
+      riskLevel: Host['riskLevel']
+      riskReasons: string[]
+      eventCount: number
+    }>
+  }>(`/api/report?windowSec=${clamped}&format=json`)
 
-    return {
-      generatedAt: new Date(remote.generatedAt),
-      period: { start: new Date(remote.since), end: new Date(remote.until) },
+  if (!remote) {
+    const end = new Date()
+    const start = new Date(end.getTime() - clamped * 1000)
+    const events = getAllEvents().filter(
+      (e) => e.timestamp >= start && e.timestamp <= end,
+    )
+    const hosts = getAllHosts()
+    const report: Report = {
+      generatedAt: new Date(),
+      period: { start, end },
       summary: {
-        totalEvents: remote.summary.eventsInWindow,
-        uniqueHosts: remote.summary.flaggedHostCount,
-        avgLatency: 0,
+        totalEvents: events.length,
+        uniqueHosts: new Set(events.map((e) => e.hostId)).size,
+        avgLatency: Math.round(
+          events.reduce((sum, e) => sum + e.latency, 0) / (events.length || 1),
+        ),
         riskDistribution: {
-          clean: 0,
-          watch: remote.flaggedHosts.filter((h) => h.riskLevel === 'watch').length,
-          risky: remote.flaggedHosts.filter((h) => h.riskLevel === 'risky').length,
+          clean: events.filter((e) => e.riskLevel === 'clean').length,
+          watch: events.filter((e) => e.riskLevel === 'watch').length,
+          risky: events.filter((e) => e.riskLevel === 'risky').length,
         },
       },
-      hosts: remote.flaggedHosts.map((h) => ({
-        id: h.id,
-        ip: h.ip,
-        hostname: h.label,
-        region: '—',
-        lastSeen: new Date(remote.until),
-        totalEvents: h.eventCount,
-        riskLevel: h.riskLevel,
-        riskReasons: h.riskReasons,
-      })),
-      events: [],
+      hosts,
+      events,
+    }
+    return {
+      json: report,
+      markdown:
+        (typeof markdown === 'string' && markdown) ||
+        `# Outbounds debug report\n\nFallback mock report with ${report.summary.totalEvents} events.\n`,
     }
   }
 
-  const events = getAllEvents().filter(
-    (e) => e.timestamp >= startTime && e.timestamp <= endTime,
-  )
-  const hosts = getAllHosts()
-
-  return {
-    generatedAt: new Date(),
-    period: { start: startTime, end: endTime },
+  const report: Report = {
+    generatedAt: new Date(remote.generatedAt),
+    period: { start: new Date(remote.since), end: new Date(remote.until) },
     summary: {
-      totalEvents: events.length,
-      uniqueHosts: new Set(events.map((e) => e.hostId)).size,
-      avgLatency: Math.round(
-        events.reduce((sum, e) => sum + e.latency, 0) / (events.length || 1),
-      ),
+      totalEvents: remote.summary.eventsInWindow,
+      uniqueHosts: remote.summary.flaggedHostCount,
+      avgLatency: 0,
       riskDistribution: {
-        clean: events.filter((e) => e.riskLevel === 'clean').length,
-        watch: events.filter((e) => e.riskLevel === 'watch').length,
-        risky: events.filter((e) => e.riskLevel === 'risky').length,
+        clean: 0,
+        watch: remote.flaggedHosts.filter((h) => h.riskLevel === 'watch').length,
+        risky: remote.flaggedHosts.filter((h) => h.riskLevel === 'risky').length,
       },
     },
-    hosts,
-    events,
+    hosts: remote.flaggedHosts.map((h) => ({
+      id: h.id,
+      ip: h.ip,
+      hostname: h.label,
+      region: '—',
+      lastSeen: new Date(remote.until),
+      totalEvents: h.eventCount,
+      riskLevel: h.riskLevel,
+      riskReasons: h.riskReasons,
+    })),
+    events: [],
   }
+
+  return {
+    json: report,
+    markdown:
+      typeof markdown === 'string' && markdown.length > 0
+        ? markdown
+        : `# Outbounds debug report\n\nEvents: ${report.summary.totalEvents}\n`,
+  }
+}
+
+export async function generateReport(startTime: Date, endTime: Date): Promise<Report> {
+  const windowSec = Math.max(
+    30,
+    Math.round((endTime.getTime() - startTime.getTime()) / 1000),
+  )
+  const bundle = await fetchDebugReport(windowSec)
+  return bundle.json as Report
 }
