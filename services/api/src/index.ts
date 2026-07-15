@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { env } from './env.js'
+import { eventFeedRoutes } from './routes/event-feed.js'
 import { eventsRoutes } from './routes/events.js'
 import { hostsRoutes } from './routes/hosts.js'
 import { overviewRoutes } from './routes/overview.js'
@@ -12,6 +13,7 @@ await app.register(cors, {
 })
 
 await app.register(eventsRoutes)
+await app.register(eventFeedRoutes)
 await app.register(hostsRoutes)
 await app.register(overviewRoutes)
 
