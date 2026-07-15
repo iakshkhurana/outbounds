@@ -10,15 +10,17 @@ Order matters. UI polish without data flow comes later.
 
 ## Phase 1 — API (`services/api`)
 
-- [ ] Fastify/Express + TypeScript scaffold
-- [ ] Prisma schema from `data-model.md`
-- [ ] zod EventInput schema
-- [ ] `POST /api/events` + token auth
-- [ ] Host upsert + event insert
-- [ ] Risk engine + unit tests
-- [ ] `GET /api/overview`, `GET /api/hosts`, `GET /api/hosts/:id`
-- [ ] Demo replay + reset (env-gated)
-- [ ] CORS for `http://localhost:3000`
+- [x] Fastify/Express + TypeScript scaffold
+- [x] Prisma schema from `data-model.md`
+- [x] zod EventInput schema
+- [x] `POST /api/events` + token auth
+- [x] Host upsert + event insert
+- [x] Risk engine + unit tests
+- [x] `GET /api/overview`, `GET /api/hosts`, `GET /api/hosts/:id`
+- [x] Demo replay + reset (env-gated)
+- [x] CORS for `http://localhost:3000`
+- [x] Capture heartbeat + status
+- [x] `GET /api/report`
 
 ## Phase 2 — Web (`web/`)
 
