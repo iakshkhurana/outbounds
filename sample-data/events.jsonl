@@ -1,0 +1,15 @@
+{"ts":"2026-07-15T04:20:01.000Z","ip":"140.82.112.4","hostname":"api.github.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":42,"bytesOut":1200,"bytesIn":8400}
+{"ts":"2026-07-15T04:20:02.000Z","ip":"1.1.1.1","hostname":"one.one.one.one","protocol":"dns","direction":"out","dstPort":53,"domain":"api.github.com","dnsStatus":"ok","latencyMs":18,"bytesOut":64,"bytesIn":128}
+{"ts":"2026-07-15T04:20:05.000Z","ip":"142.250.193.14","hostname":"www.google.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":35,"bytesOut":900,"bytesIn":5200}
+{"ts":"2026-07-15T04:20:08.000Z","ip":"8.8.8.8","hostname":"dns.google","protocol":"dns","direction":"out","dstPort":53,"domain":"missing.lab.outbounds.test","dnsStatus":"failed","latencyMs":80,"bytesOut":72,"bytesIn":0}
+{"ts":"2026-07-15T04:20:09.000Z","ip":"8.8.8.8","hostname":"dns.google","protocol":"dns","direction":"out","dstPort":53,"domain":"missing.lab.outbounds.test","dnsStatus":"failed","latencyMs":90,"bytesOut":72,"bytesIn":0}
+{"ts":"2026-07-15T04:20:10.000Z","ip":"8.8.8.8","hostname":"dns.google","protocol":"dns","direction":"out","dstPort":53,"domain":"missing.lab.outbounds.test","dnsStatus":"timeout","latencyMs":320,"bytesOut":72,"bytesIn":0}
+{"ts":"2026-07-15T04:20:12.000Z","ip":"104.16.132.229","hostname":"cloudflare.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":28,"bytesOut":700,"bytesIn":4100}
+{"ts":"2026-07-15T04:20:15.000Z","ip":"203.0.113.50","hostname":"odd.port.lab","protocol":"tcp","direction":"out","dstPort":5555,"dnsStatus":"unknown","latencyMs":55,"bytesOut":240,"bytesIn":120}
+{"ts":"2026-07-15T04:20:16.000Z","ip":"203.0.113.50","hostname":"odd.port.lab","protocol":"tcp","direction":"out","dstPort":5555,"dnsStatus":"unknown","latencyMs":60,"bytesOut":180,"bytesIn":90}
+{"ts":"2026-07-15T04:20:18.000Z","ip":"13.107.42.14","hostname":"login.microsoftonline.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":410,"bytesOut":1500,"bytesIn":2200}
+{"ts":"2026-07-15T04:20:20.000Z","ip":"151.101.1.69","hostname":"fastly.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":33,"bytesOut":640,"bytesIn":3000}
+{"ts":"2026-07-15T04:20:22.000Z","ip":"1.1.1.1","hostname":"one.one.one.one","protocol":"dns","direction":"out","dstPort":53,"domain":"registry.npmjs.org","dnsStatus":"ok","latencyMs":22,"bytesOut":70,"bytesIn":140}
+{"ts":"2026-07-15T04:20:24.000Z","ip":"104.16.16.35","hostname":"registry.npmjs.org","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":95,"bytesOut":2000,"bytesIn":18000}
+{"ts":"2026-07-15T04:20:27.000Z","ip":"198.51.100.10","hostname":"slow.edge.lab","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":620,"bytesOut":400,"bytesIn":800}
+{"ts":"2026-07-15T04:20:30.000Z","ip":"140.82.112.4","hostname":"api.github.com","protocol":"tcp","direction":"out","dstPort":443,"dnsStatus":"unknown","latencyMs":48,"bytesOut":1100,"bytesIn":7600}
