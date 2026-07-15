@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { MetricsGrid } from '@/components/overview/metrics-grid'
@@ -9,7 +9,7 @@ import { EventFeed } from '@/components/shared/event-feed'
 import { RiskChip } from '@/components/shared/risk-chip'
 import { useTone } from '@/components/providers/tone-provider'
 import type { FilterState, Host, NetworkEvent } from '@/lib/types'
-import { fetchEvents, fetchHosts } from '@/lib/api'
+import { fetchEvents, fetchHosts, isApiConfigured, triggerReplay } from '@/lib/api'
 
 export function OverviewPage() {
   const { tone } = useTone()
@@ -17,6 +17,11 @@ export function OverviewPage() {
   const [hosts, setHosts] = useState<Host[]>([])
   const [filters, setFilters] = useState<FilterState>({})
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const reload = useCallback(() => {
+    setRefreshKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -30,7 +35,7 @@ export function OverviewPage() {
     return () => {
       cancelled = true
     }
-  }, [filters])
+  }, [filters, refreshKey])
 
   const filteredEvents = events.filter((event) => {
     if (!filters.searchTerm) return true
@@ -47,11 +52,11 @@ export function OverviewPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Header onDataMutated={reload} />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <MetricsGrid />
+          <MetricsGrid refreshKey={refreshKey} />
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -110,7 +115,24 @@ export function OverviewPage() {
               {filteredEvents.length} event{filteredEvents.length === 1 ? '' : 's'}
             </span>
           </div>
-          <EventFeed events={filteredEvents} tone={tone} loading={loading} />
+
+          {!loading && filteredEvents.length === 0 && isApiConfigured() ? (
+            <div className="rounded-lg border border-border/30 bg-card/30 p-8 text-center">
+              <p className="text-muted-foreground">No events in the API yet.</p>
+              <button
+                type="button"
+                className="mt-4 rounded border border-primary/40 px-4 py-2 text-sm text-primary hover:bg-primary/10"
+                onClick={async () => {
+                  const ok = await triggerReplay()
+                  if (ok) reload()
+                }}
+              >
+                Load sample replay
+              </button>
+            </div>
+          ) : (
+            <EventFeed events={filteredEvents} tone={tone} loading={loading} />
+          )}
         </div>
 
         <div className="mt-12">
