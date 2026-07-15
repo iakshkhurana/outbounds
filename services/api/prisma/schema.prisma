@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum RiskLevel {
+  clean
+  watch
+  risky
+}
+
+enum Direction {
+  out
+  in
+  unknown
+}
+
+enum Protocol {
+  tcp
+  udp
+  dns
+  other
+}
+
+enum DnsStatus {
+  ok
+  failed
+  timeout
+  unknown
+}
+
+enum CaptureMode {
+  live
+  replay
+  idle
+}
+
+model Host {
+  id           String    @id @default(cuid())
+  ip           String
+  hostname     String?
+  firstSeenAt  DateTime
+  lastSeenAt   DateTime
+  bytesOut     Int       @default(0)
+  bytesIn      Int       @default(0)
+  eventCount   Int       @default(0)
+  avgLatencyMs Float?
+  riskLevel    RiskLevel @default(clean)
+  riskReasons  String    @default("[]")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  events       Event[]
+
+  @@index([lastSeenAt])
+  @@index([riskLevel])
+  @@index([hostname])
+  @@index([ip])
+  @@index([ip, hostname])
+}
+
+model Event {
+  id          String     @id @default(cuid())
+  hostId      String
+  host        Host       @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  ts          DateTime
+  direction   Direction  @default(out)
+  protocol    Protocol
+  srcPort     Int?
+  dstPort     Int?
+  domain      String?
+  dnsStatus   DnsStatus  @default(unknown)
+  latencyMs   Float?
+  processName String?
+  tags        String     @default("[]")
+  rawMeta     String?
+  createdAt   DateTime   @default(now())
+
+  @@index([ts])
+  @@index([hostId, ts])
+}
+
+model CaptureSession {
+  id              String      @id @default(cuid())
+  startedAt       DateTime    @default(now())
+  endedAt         DateTime?
+  mode            CaptureMode @default(idle)
+  source          String
+  lastHeartbeatAt DateTime?
+}
