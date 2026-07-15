@@ -3,14 +3,20 @@
 ## D1 — Name: Outbounds
 
 **Decision:** Product name is **Outbounds**.  
-**Why:** Clear, product-y, referral-safe; less meme than “Packet Snitch”, still memorable.  
-**Consequence:** Repo, docs, UI brand use Outbounds. Snitch-style copy only in Story tone.
+**Why:** Clear product name; memorable without being a joke brand.  
+**Consequence:** Repo, docs, and UI brand use Outbounds. Story-tone labels stay UI-only.
 
-## D2 — TypeScript product + Python sniffer
+## D2 — Microservices: web + api + sniffer
 
-**Decision:** UI/API in Next.js/TS; capture worker in Python.  
-**Why:** Builder strength in TS; Python matches Cisco JD + easier packet libs.  
-**Consequence:** Clear JSON contract; two runtimes in Compose.
+**Decision:** Separate `web/`, `services/api`, and `services/sniffer`.  
+**Why:** Clear service boundaries — UI, persistence/risk, and capture stay independent.  
+**Consequence:** CORS + env URLs; three local processes.
+
+## D2b — TypeScript API + Python sniffer
+
+**Decision:** API in TypeScript; capture worker in Python.  
+**Why:** TS strength on product/API; Python for packet libs + JD alignment.  
+**Consequence:** JSON contract between services.
 
 ## D3 — Metadata only, no TLS decryption
 
@@ -22,7 +28,7 @@
 
 **Decision:** Local SQLite for v1.  
 **Why:** Zero ops, easy demo, enough for single machine.  
-**Consequence:** Not multi-writer heavy; fine for portfolio.
+**Consequence:** Not multi-writer heavy; fine for local v1.
 
 ## D5 — Replay mode is first-class
 
@@ -39,7 +45,7 @@
 ## D7 — Serious default tone
 
 **Decision:** UI defaults to Serious labels.  
-**Why:** Referral / Cisco employee viewing.  
+**Why:** Professional default for demos and reviews.  
 **Consequence:** Story mode is optional flair.
 
 ## D8 — Polling before SSE

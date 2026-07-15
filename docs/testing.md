@@ -57,7 +57,7 @@ sample-data/
 5. Toggle Story tone → labels change, layout stable
 6. Stop sniffer → offline banner appears (if live)
 
-## Scale / soak (portfolio evidence)
+## Scale / soak (reliability evidence)
 
 - Replay 10k events; UI still usable
 - Note p95 ingest time in README (even rough)

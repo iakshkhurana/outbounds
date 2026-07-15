@@ -12,17 +12,18 @@ Follow these so the project looks intentional, not random.
 ## Naming
 
 - Product: **Outbounds**
-- Package/folders: `outbounds`, `apps/web`, `services/sniffer`
+- Folders: `web/`, `services/api/`, `services/sniffer/`, `sample-data/`, `docs/`
 - UI routes: `/`, `/hosts/[id]`, `/report`
+- API default port `4000`; web `3000`
 - Risk enums: `clean | watch | risky` (never store Story slang in DB)
 
 ## Code style
 
 - Feature folders over giant `utils.ts`
 - zod at every API boundary
-- Server components by default; client only for live widgets
+- Web talks to API over HTTP; don’t hide business logic only in UI
 - No `any` unless cornered — comment why
-- Functions small; risk rules pure + unit tested
+- Functions small; risk rules pure + unit tested (in API service)
 
 ## Git
 

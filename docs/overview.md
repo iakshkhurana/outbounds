@@ -2,7 +2,7 @@
 
 **One-liner:** See who your device is really talking to.
 
-**Tagline (Serious):** Local network visibility for DNS failures, latency ghosts, and unexpected outbound connections.
+**Tagline (Serious):** Local network visibility for DNS failures, latency issues, and unexpected outbound connections.
 
 **Tagline (Story):** Your apps can’t gaslight you anymore.
 
@@ -10,50 +10,47 @@
 
 ## What this is
 
-Outbounds is a student-built **network observability tool** for your own machine/lab:
+Outbounds is a **local network visibility product** for your own machine or lab:
 
-- Captures **connection metadata** (not full packet payloads / not HTTPS content)
+- Captures **connection metadata** (not payloads, not HTTPS content)
 - Surfaces **who**, **where**, **how often**, and **what looks off**
-- Ships as a polished TS full-stack app + small Python sniffer worker
-
-Built as a portfolio project aligned with Cisco-style themes: networking fundamentals, debugging, secure coding, testing, and clear product thinking.
+- Runs as three services: web UI, API, and Python sniffer
 
 ---
 
 ## What this is NOT
 
-- Not a Cisco product clone
 - Not a MITM proxy / TLS decryptor
-- Not a production enterprise firewall / IDS
-- Not a VPN replacement
+- Not an enterprise firewall or IDS
+- Not a VPN
 
-Honesty is a feature. Document limitations in the README and demo.
+Limits stay documented in the README.
 
 ---
 
 ## Primary user
 
-CS student / developer debugging:
+Developer or student debugging connectivity:
 
 - “Why is this site slow?”
 - “Which app is calling home?”
 - “Is DNS failing?”
-- “What weird ports am I opening?”
+- “What odd ports am I opening?”
 
 ---
 
 ## Core loop
 
-1. Sniffer collects outbound events
-2. API stores + scores them
-3. Dashboard shows live overview + host details
-4. User exports a short debug report
+1. Sniffer collects outbound events  
+2. API stores and scores them  
+3. Web shows overview + host detail  
+4. User exports a short debug report  
 
 ---
 
 ## Success for v1
 
-- Fresh clone → `docker compose up` (or 2 scripts) → UI works
-- Fallback sample dataset if capture needs admin/pcap
-- 60s demo that tells a clear story
-- Referral-safe pitch: fascinating, defensible, not overclaimed
+- Clean local run for web + api (+ optional sniffer)
+- Replay fixtures when live capture isn’t available
+- Explainable risk reasons
+- Polish that reads like a finished product, not a lab dump

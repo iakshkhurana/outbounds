@@ -15,9 +15,14 @@ __pycache__/
 *.db-journal
 prisma/*.db
 
-# next
-apps/web/.next/
-apps/web/out/
+# next / web
+web/node_modules/
+web/.next/
+web/out/
+
+# api
+services/api/node_modules/
+services/api/dist/
 
 # python
 *.egg-info/

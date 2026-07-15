@@ -1,83 +1,63 @@
 # Outbounds — Architecture
 
-## High-level
+## High-level (microservices)
 
 ```text
 ┌────────────────────┐     JSON events      ┌──────────────────────────┐
-│  Python Sniffer    │ ───────────────────► │  Next.js API + Prisma    │
-│  (live pcap)       │   POST /api/events   │  SQLite                  │
+│  sniffer service   │ ───────────────────► │  api service :4000       │
+│  (Python)          │   POST /api/events   │  SQLite + risk engine    │
 └────────────────────┘                      └────────────┬─────────────┘
-                                                         │
+                                                         │ REST JSON
 ┌────────────────────┐                                   │
-│  Replay / sample   │ ──────────────────────────────────┤
-│  events.jsonl      │                                   ▼
+│  sample-data/      │ ── replay via API ────────────────┤
+│  *.jsonl           │                                   ▼
 └────────────────────┘                      ┌──────────────────────────┐
-                                            │  Dashboard (React)       │
-                                            │  Overview / Host / Report│
+                                            │  web :3000               │
+                                            │  Next.js UI only         │
                                             └──────────────────────────┘
 ```
 
+Three units. No shared JS monorepo tooling required.
+
 ## Components
 
-### 1) Sniffer (`services/sniffer`)
+### 1) `services/sniffer`
 
-Responsibilities:
+- Capture outbound metadata (best-effort)
+- Normalize → Event schema
+- Batch POST to API + heartbeat
+- Dry-run mode without pcap
 
-- Capture outbound packets / flows (best-effort metadata)
-- Normalize to Event schema
-- Batch POST to API every ~1s
-- Heartbeat ping so UI shows “Capturing”
+### 2) `services/api`
 
-Does **not**:
+- Token-auth ingest
+- Persist hosts/events
+- Risk scoring
+- Query + report endpoints
+- Demo replay/reset (env-gated)
 
-- Decrypt TLS
-- Persist long-term state (API owns storage)
-- Enforce firewall rules (v1)
+### 3) `web`
 
-### 2) API (Next.js)
-
-Responsibilities:
-
-- Validate token
-- Validate event payloads (zod)
-- Upsert hosts + insert events
-- Run risk scoring hooks
-- Query endpoints for UI + report export
-
-### 3) Web UI
-
-Responsibilities:
-
-- Overview metrics + feed
-- Host detail
-- Filters
-- Tone toggle
-- Export report button
-
-## Data flow (happy path)
-
-1. Packet seen → sniffer builds Event
-2. Event batched → `POST /api/events`
-3. API validates → writes DB → updates host aggregates
-4. UI polls (2–3s) or uses lightweight SSE (optional P1)
-5. Risk engine tags host/event with reasons
+- Product UI only
+- Calls API via `NEXT_PUBLIC_API_URL`
+- Graceful fallback when API is unavailable
 
 ## Trust boundary
 
-- Sniffer is local trusted process
-- Shared token prevents random LAN posts in demos
-- No multi-tenant security model in v1
-- Treat all network data as sensitive on disk (local only)
+- Sniffer + API are local trusted processes
+- Shared ingest token on write endpoints
+- Web is read-mostly (+ demo actions)
+- Metadata only; no payload storage
 
-## Failure modes (design for them)
+## Failure modes
 
 | Failure | Behavior |
 |---|---|
-| No pcap permissions | UI offers Replay mode |
-| Sniffer offline | Show stale heartbeat + banner |
-| Bad event payload | 400 + log; don’t crash ingest |
-| DB locked | Retry once; surface toast |
+| No pcap permissions | Replay via API |
+| Sniffer offline | Capture status Offline |
+| API down | Web uses mock fallback + error banner |
+| Bad event payload | 400; ingest continues |
 
-## Scalability note (interview line)
+## Growth note
 
-v1 is single-machine SQLite by design. Path to growth: Postgres, append-only event store, and streaming ingest — not needed for portfolio scope.
+Later: split DB, add Postgres, stream ingest. Not v1.

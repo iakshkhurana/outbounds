@@ -1,6 +1,6 @@
 # Outbounds — API
 
-Base: `http://localhost:3000`
+Base: `http://localhost:4000` (API microservice)
 
 Auth for ingest: header `x-outbounds-token: <SNIFFER_SHARED_TOKEN>`
 

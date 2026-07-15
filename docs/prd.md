@@ -22,9 +22,9 @@ Ship a **beautiful, small, understandable** tool that answers:
 
 | Persona | Need |
 |---|---|
-| Student builder (you) | Portfolio + referral demo |
-| Curious developer | Quick visibility without Wireshark |
-| Cisco referral audience | Signs of networking + product + engineering taste |
+| Developer | Fast visibility without Wireshark |
+| Student / lab user | Learn networking with a clear UI |
+| Reviewer | Credible scope, clean engineering, honest limits |
 
 ## User stories
 

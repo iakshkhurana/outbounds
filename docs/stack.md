@@ -4,56 +4,68 @@
 
 | Layer | Choice | Why |
 |---|---|---|
-| Web app | **Next.js (App Router) + TypeScript** | You know TS full-stack; fast polished UI |
-| UI | **Tailwind CSS** + custom CSS vars | Control look; avoid generic component mush |
-| Charts | **Recharts** | Simple latency / top-hosts charts |
-| API | Next.js Route Handlers (or tRPC if already comfy) | One repo; keep simple |
-| DB | **SQLite + Prisma** | Local, zero ops, portfolio-friendly |
-| Sniffer | **Python 3** + `scapy` or `pyshark` | Cisco JD alignment + easier packet work |
-| Transport | HTTP POST JSON from sniffer → `/api/events` | Clear boundary |
-| Repo tooling | pnpm or npm, ESLint, Prettier | Consistency |
-| Optional run | Docker Compose (`web` + `sniffer`) | One-command demo |
+| Web UI | **Next.js (App Router) + TypeScript + Tailwind** in `web/` | Separate frontend service |
+| API | **TypeScript** service in `services/api` (Fastify or Express) | Owns persistence, risk, and query API |
+| DB | **SQLite + Prisma** (API-owned) | Local, zero ops for v1 |
+| Sniffer | **Python** service in `services/sniffer` | Capture worker posts JSON to API |
+| Charts | Recharts (web) | Simple destination / latency visuals |
 
-## Repo layout (target)
+## Repo layout
 
 ```text
 outbounds/
-  apps/web/                 # Next.js
-  services/sniffer/         # Python worker
-  docs/                     # this folder
-  docker-compose.yml
+  web/                    # Frontend service
+  services/
+    api/                  # Ingest, query, risk, report
+    sniffer/              # Packet metadata capture
+  sample-data/            # Replay fixtures
+  docs/
   README.md
-  sample-data/events.jsonl
 ```
+
+Three deployable services: **web**, **api**, **sniffer**.
 
 ## Runtime modes
 
-1. **Live capture** — sniffer running with privileges / Npcap on Windows
-2. **Replay mode** — web ingests `sample-data/events.jsonl` (demo-safe default)
+1. **Live capture** — sniffer → API → web  
+2. **Replay** — API loads `sample-data/*.jsonl`
 
-Always ship replay mode so referral demos never die on permissions.
+## Ports
 
-## Environment vars (web)
+| Service | Port |
+|---|---|
+| web | 3000 |
+| api | 4000 |
+| sniffer | none (outbound client) |
+
+## Env (web)
 
 ```bash
-DATABASE_URL="file:./dev.db"
-SNIFFER_SHARED_TOKEN="dev-local-token"   # sniffer sends as header
-OUTBOUNDS_TONE_DEFAULT="serious"         # serious | story
+NEXT_PUBLIC_API_URL="http://localhost:4000"
+OUTBOUNDS_TONE_DEFAULT="serious"
 ```
 
-## Environment vars (sniffer)
+## Env (api)
 
 ```bash
-OUTBOUNDS_API_URL="http://localhost:3000/api/events"
+PORT=4000
+DATABASE_URL="file:./dev.db"
+SNIFFER_SHARED_TOKEN="dev-local-token"
+ALLOW_DEMO_REPLAY=true
+```
+
+## Env (sniffer)
+
+```bash
+OUTBOUNDS_API_URL="http://localhost:4000/api/events"
 OUTBOUNDS_TOKEN="dev-local-token"
-CAPTURE_IFACE=""          # empty = auto
+CAPTURE_IFACE=""
 BATCH_MS=1000
 ```
 
-## What we intentionally skip (v1)
+## Out of scope (v1)
 
+- Turborepo / nx
 - Redis, Kafka, k8s
-- Auth providers (Auth0/Clerk)
-- Postgres (unless you already want it)
-- Electron wrapper
-- Mobile clients
+- Hosted auth providers
+- Electron / mobile clients

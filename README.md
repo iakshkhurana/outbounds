@@ -2,57 +2,69 @@
 
 **See who your device is really talking to.**
 
-Local network visibility for outbound connections — DNS failures, latency ghosts, and unexpected destinations. Metadata only. No TLS decryption.
+Outbounds is a local network visibility tool. It shows outbound destinations, DNS failures, latency issues, and unexpected connections — metadata only, no TLS decryption.
 
-> Status: docs-first. Implementation follows `docs/todo.md`.
+## Architecture
 
-## Why this exists
+Three services:
 
-Quick answers without firing up a full packet forensics workflow. Built as a portfolio project with networking + full-stack craft (Cisco-aligned themes, honest scope).
+| Service | Role | Default |
+|---|---|---|
+| `web/` | Product UI (Next.js) | `:3000` |
+| `services/api/` | Ingest, query, risk, reports | `:4000` |
+| `services/sniffer/` | Capture worker (Python) | posts to API |
+
+```text
+sniffer ──events──► api ──REST──► web
+                      ▲
+                 sample-data (replay)
+```
 
 ## Stack
 
-- **Web/API:** Next.js · TypeScript · Tailwind · Prisma · SQLite  
-- **Sniffer:** Python (Scapy/pyshark) → JSON ingest  
-- **Demo safety:** Replay mode via sample JSONL  
+- **web:** Next.js · TypeScript · Tailwind  
+- **api:** TypeScript · Prisma · SQLite  
+- **sniffer:** Python  
 
-Details: [`docs/stack.md`](docs/stack.md)
+See [`docs/stack.md`](docs/stack.md).
 
 ## Docs
 
 | Doc | Purpose |
 |---|---|
-| [overview.md](docs/overview.md) | What / not |
-| [prd.md](docs/prd.md) | Scope & stories |
-| [architecture.md](docs/architecture.md) | System shape |
+| [overview.md](docs/overview.md) | Product summary |
+| [prd.md](docs/prd.md) | Requirements |
+| [architecture.md](docs/architecture.md) | System design |
 | [data-model.md](docs/data-model.md) | Schema & risk rules |
-| [api.md](docs/api.md) | Endpoints |
+| [api.md](docs/api.md) | HTTP API |
 | [stack.md](docs/stack.md) | Tech choices |
-| [conventions.md](docs/conventions.md) | How to code it |
-| [decisions.md](docs/decisions.md) | ADRs |
+| [conventions.md](docs/conventions.md) | Engineering conventions |
+| [decisions.md](docs/decisions.md) | Design decisions |
 | [testing.md](docs/testing.md) | Test strategy |
 | [todo.md](docs/todo.md) | Build order |
 
-## Run (target — after Phase 0)
+## Run
 
 ```bash
-# web
-cd apps/web && pnpm install && pnpm dev
+# API
+cd services/api && npm run dev
 
-# sniffer (optional live)
-cd services/sniffer && python -m venv .venv && # activate then
-pip install -r requirements.txt && python main.py
+# Web
+cd web && npm run dev
+
+# Sniffer (optional)
+cd services/sniffer && python main.py
 ```
 
-Replay mode should work even when capture cannot.
+Replay mode works without live capture.
 
-## Limitations (read this)
+## Limits
 
 - Not a firewall, IDS, or MITM proxy  
-- Best-effort process attribution depending on OS  
-- Windows live capture may need Npcap + privileges  
-- Single-machine SQLite; not multi-tenant SaaS  
+- Process attribution is best-effort by OS  
+- Windows live capture may need Npcap and elevated privileges  
+- Single-machine SQLite in v1  
 
 ## License
 
-MIT (intended).
+MIT
