@@ -90,6 +90,16 @@ docker compose up --build
 docker compose --profile sniffer up --build   # optional dry-run sniffer
 ```
 
+### Smoke check (API must be running)
+
+```powershell
+.\scripts\smoke.ps1
+```
+
+```bash
+chmod +x scripts/smoke.sh && ./scripts/smoke.sh
+```
+
 ## Screenshots
 
 Add PNGs under [`docs/screenshots/`](docs/screenshots/) (`overview.png`, `host-detail.png`, `report.png`), then uncomment:

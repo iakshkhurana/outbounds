@@ -43,6 +43,7 @@ Order matters. UI polish without data flow comes later.
 - [x] `GET /api/report` Markdown export
 - [x] Optional Docker Compose (web + api + sniffer)
 - [x] README screenshots slot (`docs/screenshots/`)
+- [x] API smoke script + CI for risk unit tests
 
 ## Later / out of scope
 
