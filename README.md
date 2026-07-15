@@ -45,18 +45,40 @@ See [`docs/stack.md`](docs/stack.md).
 
 ## Run
 
+### API (`:4000`)
+
 ```bash
-# API
-cd services/api && npm run dev
-
-# Web
-cd web && npm run dev
-
-# Sniffer (optional)
-cd services/sniffer && python main.py
+cd services/api
+cp .env.example .env   # once
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
 ```
 
-Replay mode works without live capture.
+Quick demo load:
+
+```bash
+curl -X POST http://localhost:4000/api/demo/replay -H "content-type: application/json" -d "{}"
+```
+
+### Web (`:3000`)
+
+```bash
+cd web
+cp .env.example .env.local   # set NEXT_PUBLIC_API_URL=http://localhost:4000
+pnpm install   # or npm install
+pnpm dev
+```
+
+### Sniffer (optional)
+
+```bash
+cd services/sniffer
+python main.py
+```
+
+Replay mode works without live capture. See [`services/api/README.md`](services/api/README.md) for API details.
 
 ## Limits
 
