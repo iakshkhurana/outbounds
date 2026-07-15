@@ -136,4 +136,5 @@ Add PNGs under [`docs/screenshots/`](docs/screenshots/) (`overview.png`, `host-d
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+**All Rights Reserved** — portfolio / placement showcase only.  
+See [`LICENSE`](LICENSE). Viewing and local evaluation are allowed; copying or reusing this work as your own is not.
