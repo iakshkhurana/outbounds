@@ -1,0 +1,39 @@
+# deps
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# db / local data
+*.db
+*.db-journal
+prisma/*.db
+
+# next
+apps/web/.next/
+apps/web/out/
+
+# python
+*.egg-info/
+.pytest_cache/
+
+# capture dumps
+*.pcap
+*.pcapng
+
+# os / ide
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# logs
+*.log
+npm-debug.log*
