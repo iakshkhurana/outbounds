@@ -9,7 +9,16 @@ import { EventFeed } from '@/components/shared/event-feed'
 import { RiskChip } from '@/components/shared/risk-chip'
 import { useTone } from '@/components/providers/tone-provider'
 import type { FilterState, Host, NetworkEvent } from '@/lib/types'
-import { fetchEvents, fetchHosts, isApiConfigured, triggerReplay } from '@/lib/api'
+import {
+  fetchEvents,
+  fetchHosts,
+  getLastDataSource,
+  isApiConfigured,
+  probeApi,
+  triggerReplay,
+  type DataSource,
+} from '@/lib/api'
+import { ApiBanner } from '@/components/shared/api-banner'
 
 export function OverviewPage() {
   const { tone } = useTone()
@@ -18,6 +27,7 @@ export function OverviewPage() {
   const [filters, setFilters] = useState<FilterState>({})
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [source, setSource] = useState<DataSource>(getLastDataSource())
 
   const reload = useCallback(() => {
     setRefreshKey((k) => k + 1)
@@ -26,12 +36,18 @@ export function OverviewPage() {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    Promise.all([fetchEvents(filters), fetchHosts()]).then(([eventsData, hostsData]) => {
+    ;(async () => {
+      await probeApi()
+      const [eventsData, hostsData] = await Promise.all([
+        fetchEvents(filters),
+        fetchHosts(),
+      ])
       if (cancelled) return
       setEvents(eventsData)
       setHosts(hostsData)
+      setSource(getLastDataSource())
       setLoading(false)
-    })
+    })()
     return () => {
       cancelled = true
     }
@@ -55,6 +71,8 @@ export function OverviewPage() {
       <Header onDataMutated={reload} />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <ApiBanner source={source} onRetry={reload} />
+
         <div className="mb-8">
           <MetricsGrid refreshKey={refreshKey} />
         </div>
@@ -137,6 +155,11 @@ export function OverviewPage() {
 
         <div className="mt-12">
           <h2 className="mb-4 text-lg font-semibold">Active hosts</h2>
+          {hosts.length === 0 && !loading ? (
+            <div className="rounded-lg border border-dashed border-border/40 bg-card/20 p-8 text-center text-sm text-muted-foreground">
+              No hosts yet. Replay sample data or run the sniffer dry-run.
+            </div>
+          ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {hosts.slice(0, 6).map((host) => (
               <Link
@@ -162,6 +185,7 @@ export function OverviewPage() {
               </Link>
             ))}
           </div>
+          )}
         </div>
 
         <footer className="mt-16 border-t border-border/20 pt-8 text-center text-xs text-muted-foreground">

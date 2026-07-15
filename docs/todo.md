@@ -27,7 +27,7 @@ Order matters. UI polish without data flow comes later.
 - [x] Next.js UI scaffold (overview, host detail, report)
 - [x] Component layout organized by feature
 - [x] Live API wiring verified against `services/api`
-- [ ] Empty / loading / error polish pass
+- [x] Empty / loading / error polish pass
 - [x] Capture status reflects real heartbeat
 
 ## Phase 3 — Sniffer (`services/sniffer`)
@@ -40,7 +40,7 @@ Order matters. UI polish without data flow comes later.
 
 ## Phase 4 — Integration
 
-- [ ] `GET /api/report` Markdown export
+- [x] `GET /api/report` Markdown export
 - [ ] Optional Docker Compose (web + api + sniffer)
 - [ ] README screenshots
 

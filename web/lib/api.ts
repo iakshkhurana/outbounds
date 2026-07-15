@@ -18,11 +18,22 @@ import { mapApiEvent, mapApiHost, mapOverview } from './mappers'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || ''
 
+export type DataSource = 'api' | 'mock' | 'unreachable'
+
+let lastDataSource: DataSource = API_URL ? 'unreachable' : 'mock'
+
+export function getLastDataSource() {
+  return lastDataSource
+}
+
 async function tryApi<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T | null> {
-  if (!API_URL) return null
+  if (!API_URL) {
+    lastDataSource = 'mock'
+    return null
+  }
   try {
     const res = await fetch(`${API_URL}${path}`, {
       cache: 'no-store',
@@ -32,15 +43,34 @@ async function tryApi<T>(
         ...(init?.headers ?? {}),
       },
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      lastDataSource = 'unreachable'
+      return null
+    }
+    lastDataSource = 'api'
     const contentType = res.headers.get('content-type') || ''
     if (contentType.includes('application/json')) {
       return (await res.json()) as T
     }
     return (await res.text()) as T
   } catch {
+    lastDataSource = 'unreachable'
     return null
   }
+}
+
+export async function probeApi(): Promise<DataSource> {
+  if (!API_URL) {
+    lastDataSource = 'mock'
+    return lastDataSource
+  }
+  try {
+    const res = await fetch(`${API_URL}/health`, { cache: 'no-store' })
+    lastDataSource = res.ok ? 'api' : 'unreachable'
+  } catch {
+    lastDataSource = 'unreachable'
+  }
+  return lastDataSource
 }
 
 export function isApiConfigured() {
