@@ -6,6 +6,7 @@ import { eventFeedRoutes } from './routes/event-feed.js'
 import { eventsRoutes } from './routes/events.js'
 import { hostsRoutes } from './routes/hosts.js'
 import { overviewRoutes } from './routes/overview.js'
+import { reportRoutes } from './routes/report.js'
 
 const app = Fastify({ logger: true })
 
@@ -19,6 +20,7 @@ await app.register(hostsRoutes)
 await app.register(overviewRoutes)
 await app.register(demoRoutes)
 await app.register(captureRoutes)
+await app.register(reportRoutes)
 
 app.get('/health', async () => ({ ok: true, service: 'outbounds-api' }))
 
