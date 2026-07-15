@@ -1,0 +1,42 @@
+services:
+  api:
+    build: ./services/api
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      DATABASE_URL: "file:/data/dev.db"
+      SNIFFER_SHARED_TOKEN: "dev-local-token"
+      ALLOW_DEMO_REPLAY: "true"
+      CORS_ORIGIN: "http://localhost:3000"
+      SAMPLE_DATA_PATH: "/sample-data/events.jsonl"
+    volumes:
+      - ./sample-data:/sample-data:ro
+      - api-db:/data
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    depends_on:
+      - api
+
+  sniffer:
+    profiles: ["sniffer"]
+    build: ./services/sniffer
+    environment:
+      MODE: dry-run
+      BATCH_MS: "1000"
+      OUTBOUNDS_API_URL: http://api:4000/api/events
+      OUTBOUNDS_HEARTBEAT_URL: http://api:4000/api/heartbeat
+      OUTBOUNDS_TOKEN: dev-local-token
+    depends_on:
+      - api
+
+volumes:
+  api-db:

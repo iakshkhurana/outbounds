@@ -1,3 +1,4 @@
+import { access } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -6,13 +7,35 @@ import { eventInputSchema, type EventInput } from '../schemas/event.js'
 import { ingestBatch } from './ingest.js'
 import { prisma } from '../db.js'
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../')
-const defaultSamplePath = path.join(rootDir, 'sample-data', 'events.jsonl')
+async function resolveSamplePath(explicit?: string): Promise<string> {
+  if (explicit) return explicit
+  if (process.env.SAMPLE_DATA_PATH) return process.env.SAMPLE_DATA_PATH
 
-export async function loadSampleEvents(
-  samplePath = defaultSamplePath,
-): Promise<EventInput[]> {
-  const raw = await readFile(samplePath, 'utf8')
+  const here = path.dirname(fileURLToPath(import.meta.url))
+  const candidates = [
+    path.resolve(process.cwd(), '../../sample-data/events.jsonl'),
+    path.resolve(process.cwd(), 'sample-data/events.jsonl'),
+    path.resolve(here, '../../../../sample-data/events.jsonl'),
+    '/sample-data/events.jsonl',
+  ]
+
+  for (const candidate of candidates) {
+    try {
+      await access(candidate)
+      return candidate
+    } catch {
+      // try next
+    }
+  }
+
+  throw new Error(
+    'sample-data/events.jsonl not found. Set SAMPLE_DATA_PATH or run from the repo.',
+  )
+}
+
+export async function loadSampleEvents(samplePath?: string): Promise<EventInput[]> {
+  const resolved = await resolveSamplePath(samplePath)
+  const raw = await readFile(resolved, 'utf8')
   const lines = raw
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -27,7 +50,7 @@ export async function loadSampleEvents(
   })
 }
 
-export async function replaySampleData(samplePath = defaultSamplePath) {
+export async function replaySampleData(samplePath?: string) {
   const events = await loadSampleEvents(samplePath)
   const now = Date.now()
   const shifted = events.map((event, index) => ({
