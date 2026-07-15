@@ -1,62 +1,72 @@
-// Network event severity levels
-export type RiskLevel = 'clean' | 'watch' | 'risky';
+export type RiskLevel = 'clean' | 'watch' | 'risky'
 
-// Tone for display labels
-export type Tone = 'serious' | 'story';
+export type Tone = 'serious' | 'story'
 
-// Host information
 export interface Host {
-  id: string;
-  ip: string;
-  hostname: string;
-  region: string;
-  lastSeen: Date;
-  totalEvents: number;
-  riskLevel: RiskLevel;
-  riskReasons: string[];
+  id: string
+  ip: string
+  hostname: string
+  region: string
+  lastSeen: Date
+  totalEvents: number
+  riskLevel: RiskLevel
+  riskReasons: string[]
 }
 
-// Network event details
 export interface NetworkEvent {
-  id: string;
-  timestamp: Date;
-  hostId: string;
-  direction: 'outbound' | 'inbound';
-  protocol: 'http' | 'https' | 'dns' | 'tcp' | 'udp';
-  sourceIp: string;
-  sourcePort: number;
-  destinationIp: string;
-  destinationPort: number;
-  destinationHostname?: string;
-  dataTransferred: number; // bytes
-  latency: number; // ms
-  status: 'success' | 'failed' | 'timeout';
-  riskLevel: RiskLevel;
-  reason?: string;
-  details?: Record<string, string>;
+  id: string
+  timestamp: Date
+  hostId: string
+  direction: 'outbound' | 'inbound'
+  protocol: 'http' | 'https' | 'dns' | 'tcp' | 'udp' | 'other'
+  sourceIp: string
+  sourcePort: number
+  destinationIp: string
+  destinationPort: number
+  destinationHostname?: string
+  dataTransferred: number
+  latency: number
+  status: 'success' | 'failed' | 'timeout'
+  riskLevel: RiskLevel
+  reason?: string
+  details?: Record<string, string>
 }
 
-// Filter state
 export interface FilterState {
-  riskLevel?: RiskLevel;
-  protocol?: string;
-  status?: 'success' | 'failed' | 'timeout';
-  searchTerm?: string;
+  riskLevel?: RiskLevel
+  protocol?: string
+  status?: 'success' | 'failed' | 'timeout'
+  searchTerm?: string
 }
 
-// Report data structure
+export interface OverviewStats {
+  activeHosts: number
+  failedDns: number
+  highLatency: number
+  eventsInWindow: number
+  windowSec: number
+}
+
+export interface CaptureStatus {
+  mode: 'live' | 'replay' | 'idle'
+  online: boolean
+  lastHeartbeatAt: string | null
+  sessionId: string | null
+  source?: string
+}
+
 export interface Report {
-  generatedAt: Date;
+  generatedAt: Date
   period: {
-    start: Date;
-    end: Date;
-  };
+    start: Date
+    end: Date
+  }
   summary: {
-    totalEvents: number;
-    uniqueHosts: number;
-    avgLatency: number;
-    riskDistribution: Record<RiskLevel, number>;
-  };
-  hosts: Host[];
-  events: NetworkEvent[];
+    totalEvents: number
+    uniqueHosts: number
+    avgLatency: number
+    riskDistribution: Record<RiskLevel, number>
+  }
+  hosts: Host[]
+  events: NetworkEvent[]
 }
