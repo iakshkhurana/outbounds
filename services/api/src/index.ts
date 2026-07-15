@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { env } from './env.js'
 import { eventsRoutes } from './routes/events.js'
+import { hostsRoutes } from './routes/hosts.js'
 
 const app = Fastify({ logger: true })
 
@@ -10,6 +11,7 @@ await app.register(cors, {
 })
 
 await app.register(eventsRoutes)
+await app.register(hostsRoutes)
 
 app.get('/health', async () => ({ ok: true, service: 'outbounds-api' }))
 
