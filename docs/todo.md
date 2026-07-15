@@ -22,10 +22,11 @@ Order matters. UI polish without data flow comes later.
 
 ## Phase 2 — Web (`web/`)
 
-- [ ] Next.js UI (overview, host detail, report)
-- [ ] `NEXT_PUBLIC_API_URL` → API `:4000`
-- [ ] Wire live fetch + offline fallback
-- [ ] Empty / loading / error states, tone toggle, export
+- [x] Next.js UI scaffold (overview, host detail, report)
+- [x] Component layout organized by feature
+- [ ] Live API wiring verified against `services/api`
+- [ ] Empty / loading / error polish pass
+- [ ] Capture status reflects real heartbeat
 
 ## Phase 3 — Sniffer (`services/sniffer`)
 
